@@ -1,11 +1,11 @@
 {
-  "name": "anjalees_backend",
+  "name": "boilerplate",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app/index.js"
+    "start": "nodemon src/index.js"
   },
   "repository": {
     "type": "git",
