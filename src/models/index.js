@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { databaseURL } = require("../config/index");
-const ssl = databaseURL.match(/localhost/);
+// const ssl = databaseURL.match(/localhost/);
 // let options = {
 //   connectTimeoutMS: 10000,
 //   useNewUrlParser: true,

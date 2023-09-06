@@ -46,7 +46,6 @@ exports.success = (message, results, statusCode, responseObj, code) => {
 /**
 * 
 * @param {string} message 
-* @param {object | array} results 
 * @param {number} statusCode 
 * @param {object} responseObj
 * @param {object} err

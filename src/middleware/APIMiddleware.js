@@ -26,15 +26,16 @@ const APIMiddleware = (req, res, next) => {
 };
 
 const adminMiddleware = (req, res, next) => {
-  if (req.headers.admin_token || req.headers["admin_token"] || req.cookies.admin_token || req.cookies["admin_token"]) {
-    const token = req.headers.admin_token || req.headers["admin_token"] || req.cookies.admin_token || req.cookies["adminanjaleestoken"];
+  if (req.headers.admin_access_token || req.headers["admin_access_token"] || req.cookies.admin_access_token || req.cookies["admin_access_token"]) {
+    const token = req.headers.admin_access_token || req.headers["admin_access_token"] || req.cookies.admin_access_token || req.cookies["admin_access_token"];
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         return error("Please login again.", statusCodeEnum.badRequest, res, err);
       } else if (decoded) {
         console.log(decoded);
         req.user = decoded;
-        if (req.user.role != "admin") {
+        
+        if (req.user.role != "ADMIN") {
           return error("Please login Admin token.", statusCodeEnum.badRequest, res, {});
         }
         next();
