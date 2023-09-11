@@ -1,89 +1,34 @@
-const nodemailer = require("nodemailer");
-const { OAuth2Client } = require("google-auth-library");
+const nodemailer = require('nodemailer');
 
-const { emailConfig } = require("../config/index");
-const { logger } = require("../utils/logger");
-
-const oauth2Client = new OAuth2Client(
-  emailConfig.oathClientId,
-  emailConfig.oathClientSecret,
-  "https://developers.google.com/oauthplayground" // Redirect URL
-);
-
-oauth2Client.setCredentials({
-  refresh_token: emailConfig.oathRefreshToken,
-});
-
-const prepareTextMail = (to, subject, text) => {
-  let data = {
-    from: emailConfig.from,
-    to: to,
-    subject: subject,
-    text: text,
-  };
-  return data;
-};
-
-const prepareHTMLMail = (to, subject, htmlData) => {
-  let data = {
-    from: emailConfig.from,
-    to: to,
-    subject: subject,
-    html: htmlData,
-  };
-  return data;
-};
-
-const prepareWithAttachmentMail = (to, subject, text, attachments = []) => {
-  let data = {
-    from: emailConfig.from,
-    to: to,
-    subject: subject,
-    text: text,
-  };
-  if (attachments.length > 0) {
-    attachments.forEach((element) => {
-      data["attachments"].push(element);
-    });
-  }
-  return data;
-};
-
-const sendMail = async (mailObj) => {
+async function mailer(req_email, _id){
   try {
-    let accessToken = await oauth2Client.getAccessToken().catch((error) => {
-      logger.error(error, "",error);
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'divyeshborkhatariya1@gmail.com',
+        pass: 'idyyhozitogmxank'
+      }
     });
+    
+    const mailOptions = {
+      from: 'divyeshborkhatariya1@gmail.com',
+      to: req_email,
+      subject: 'Verify your account',
+      text: 'Verify your account - http://localhost:3005/api/v1/user/email-verify/'+_id
+    };
+    
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        return console.log("error in sending a mail",error);
+    } else {
+           console.log('Email sent: ',mailOptions);
+         }
+    });
+    
 
-    if (accessToken) {
-      var transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          type: "OAuth2",
-          user: emailConfig.userName,
-          clientId: emailConfig.oathClientId,
-          clientSecret: emailConfig.oathClientSecret,
-          refreshToken: emailConfig.oathRefreshToken,
-          accessToken: accessToken,
-        },
-      });
-      var info = await transporter.sendMail(mailObj, function (error, info) {
-        if (error) logger.error(error.message, "", error);
-        else {
-          logger.info(`Mail sent successfully to ${mailObj.to} with subject: ${mailObj.subject}`);
-        }
-        transporter.close();
-      });
-    }
-  } catch (error) {
-    logger.error(error, "");
-    transporter.close();
-  }
+}  catch (error) {
+  console.log(error)
+}
 };
 
-module.exports = {
-  sendMail,
-  prepareWithAttachmentMail,
-  prepareHTMLMail,
-  prepareTextMail,
-};
+module.exports = mailer;

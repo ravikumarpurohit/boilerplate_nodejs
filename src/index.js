@@ -21,12 +21,12 @@ app.use(cookieParser());
 app.use(
   logger("dev", {
     skip: (req, res) => {
-      return req.originalUrl.includes("/static/");
+      return req.originalUrl.includes("/static/");//../upload/profileImage
     },
   })
 );
 
-app.use("/upload/productImages/", express.static(path.join(__dirname, "../upload/productImages")));
+// app.use("uploads/profileImage/", express.static(path.join(__dirname, "../uploads/profileImage")));
 // app.use("*/upload", express.static(path.join(__dirname, 'public/images')));
 app.use("/api/v1", Api);
 

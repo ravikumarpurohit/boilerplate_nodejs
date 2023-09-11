@@ -4,10 +4,16 @@ const { statusCodeEnum } = require("../utils/commonFun");
 const { checkPassword, encryptPassword } = require("../utils/passwordCheck");
 const { JWTSecret } = require("../config/index");
 const jwt = require("jsonwebtoken");
+const mailer = require("../utils/emailUtility");
 
 exports.signUp = async (req, res) => {
   try {
 
+    const userExist = await userModel.findOne({ email: req.body.email });
+    if (userExist) {
+      return error("Email already exists", statusCodeEnum.internalServerError, res);
+
+    }
     const password = await encryptPassword(req.body.password);
 
     const data = {
@@ -24,13 +30,17 @@ exports.signUp = async (req, res) => {
     };
 
     const result = await userModel.create(data);
+
+
     if (result) {
+      const emailSender = await mailer(req.body.email, result._id);
       let data = {
         user: result._id,
       };
+
       return success("User Created. Please login.", data, statusCodeEnum.created, res, 5);
     } else {
-      return error("Unable to create the User.", statusCodeEnum.internalServerError, res, { user: 0 });
+      return error("Unable to create the User.", statusCodeEnum.internalServerError, res);
     }
   } catch (error) {
     console.error(error);
@@ -82,7 +92,7 @@ exports.signIn = async (req, res) => {
             secure: true,
             sameSite: "None",
           };
-      res.cookie("admin_access_token", _token, cookieOptions);
+      res.cookie("access_token", _token, cookieOptions);
       let data = {
         user: { id: user._id, name: user.firstName, email: user.email, status: user.status },
       };
@@ -97,11 +107,11 @@ exports.signIn = async (req, res) => {
 
 exports.signOut = (req, res) => {
   try {
-    res.clearCookie("admin_access_token");
+    res.clearCookie("access_token");
     let data = {
       loggedOut: 1,
     };
-    return success("Succesfuly logout.", data, statusCodeEnum.success, res, 5);
+    return success("Successfully logout.", data, statusCodeEnum.success, res, 5);
   } catch (error) {
     console.error(error);
     return exception("", statusCodeEnum.internalServerError, res, error);
@@ -113,7 +123,7 @@ exports.delete = async (req, res) => {
     console.log(req.body);
     const _id = req.params._id;
     const data = { "status": "INACTIVE" };
-     await userModel.findByIdAndUpdate(_id, data, { new: true });
+    await userModel.findByIdAndUpdate(_id, data, { new: true });
     return success("Customer Deleted", "", statusCodeEnum.success, res, 5);
   } catch (e) {
     console.log(error);
@@ -156,3 +166,67 @@ exports.get = async (req, res) => {
     return error("", statusCodeEnum.internalServerError, res, error);
   }
 };
+
+exports.changePassword = async (req, res) => {
+  try {
+
+    const _id = req.params._id;
+    const oldPassword = req.body.oldPassword;
+    const password = req.body.password;
+    const passwordVerify = req.body.passwordVerify;
+
+    if (password != passwordVerify) {
+      return error("Passwords not match.", statusCodeEnum.badRequest, res, {});
+    };
+    const newPassword = await encryptPassword(password);
+
+
+    const user = await userModel.findById(_id);
+    const isPassword = await checkPassword(oldPassword, user.password);
+    if (!isPassword) {
+      return error("oldPasswords not match.", statusCodeEnum.badRequest, res, {});
+    }
+
+
+    await userModel.findByIdAndUpdate(_id, { password: newPassword }, { new: true });
+
+    return success("Password changed successfully", "", statusCodeEnum.success, res, 5);
+  } catch (e) {
+    console.log(error);
+    return error("Password not changed.", statusCodeEnum.internalServerError, res, error);
+  }
+};
+
+exports.emailVerify = async (req, res) => {
+  try {
+    console.log(req.body);
+    const _id = req.params._id;
+    await userModel.findByIdAndUpdate(_id, { emailVerify: true }, {
+      new: true,
+    });
+    return success("Email Verified successfully.", "", statusCodeEnum.created, res, 5);
+  } catch (e) {
+    console.log(e);
+    return error("Email not Verified.", statusCodeEnum.internalServerError, res, error);
+  }
+};
+
+
+exports.profileImage = async (req, res) => {
+  try {
+
+    if (req.file.filename == 0) {
+      return error("Kindly Upload Profile Images properly.", statusCodeEnum.internalServerError, res, error);
+    }
+
+    const id = req.params._id;
+    const data = await userModel.findByIdAndUpdate(id, { profileImage: req.file.filename }, { new: true });
+    console.log(data);
+
+    return success("Profile Image added successfully.", data, statusCodeEnum.created, res, 5);
+
+  } catch (e) {
+    console.log(e);
+    return error("Profile Image not added.", statusCodeEnum.internalServerError, res, error);
+  }
+}

@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["MALE", "FEMALE", "OTHER"],
     },
-    address: [address],
+    address: address,
     role: {
       type: String,
       enum: ["ADMIN", "USER"],
@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema(
       enum: ["ACTIVE", "INACTIVE"],
       default: "ACTIVE",
     },
+    profileImage: { type: String }
   },
   options
 );
