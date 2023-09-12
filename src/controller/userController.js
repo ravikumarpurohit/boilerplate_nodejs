@@ -135,10 +135,10 @@ exports.update = async (req, res) => {
   try {
     console.log(req.body);
     const _id = req.params._id;
-    const getId = await userModel.findByIdAndUpdate(_id, req.body, {
+    const data = await userModel.findByIdAndUpdate(_id, req.body, {
       new: true,
     });
-    return success("Customer Details updated.", getId, statusCodeEnum.created, res, 5);
+    return success("Customer Details updated.", "", statusCodeEnum.created, res, 5);
   } catch (e) {
     console.log(e);
     return error("Customer Details not updated.", statusCodeEnum.internalServerError, res, error);
@@ -147,9 +147,11 @@ exports.update = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
+    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 }
+
     const _id = req.params._id;
     console.log(_id);
-    const data = await userModel.findById(_id);
+    const data = await userModel.findById(_id).select(query);
     return success("", data, statusCodeEnum.created, res, 5);
   } catch (e) {
     console.log(e);
@@ -159,8 +161,9 @@ exports.getById = async (req, res) => {
 
 exports.get = async (req, res) => {
   try {
-    const get = await userModel.find();
-    res.send(get);
+    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 }
+    const data = await userModel.find().select(query);
+    return success("", data, statusCodeEnum.created, res, 5);
   } catch (e) {
     console.log(e);
     return error("", statusCodeEnum.internalServerError, res, error);
@@ -179,8 +182,6 @@ exports.changePassword = async (req, res) => {
       return error("Passwords not match.", statusCodeEnum.badRequest, res, {});
     };
     const newPassword = await encryptPassword(password);
-
-
     const user = await userModel.findById(_id);
     const isPassword = await checkPassword(oldPassword, user.password);
     if (!isPassword) {
@@ -219,8 +220,9 @@ exports.profileImage = async (req, res) => {
       return error("Kindly Upload Profile Images properly.", statusCodeEnum.internalServerError, res, error);
     }
 
+    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 }
     const id = req.params._id;
-    const data = await userModel.findByIdAndUpdate(id, { profileImage: req.file.filename }, { new: true });
+    const data = await userModel.findByIdAndUpdate(id, { profileImage: req.file.filename }, { new: true }).select(query);
     console.log(data);
 
     return success("Profile Image added successfully.", data, statusCodeEnum.created, res, 5);

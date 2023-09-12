@@ -1,0 +1,315 @@
+{
+	"info": {
+		"_postman_id": "32206b03-8de3-4436-9726-25162d086d2b",
+		"name": "boiler_plate",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28126368"
+	},
+	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "get by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "access_token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGZhZjBjYzE1MmM2MWNjOTQyZGRlZDQiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTY5NDE2NzQwMiwiZXhwIjoxNjk0MTgxODAyfQ.SdP_5EKnTbuqsGt7RjmyBIQHKs_952NMqQejW2HncSo",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/get/64feb012c4bd8e173b82781a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"get",
+								"64feb012c4bd8e173b82781a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "email verify",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/email-verify/64faf08b152c61cc942ddecf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"email-verify",
+								"64faf08b152c61cc942ddecf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "change-pass",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"sunny123\",\r\n    \"password\": \"djbobby\",\r\n    \"passwordVerify\": \"djbobby\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/change-password/64faf08b152c61cc942ddecf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"change-password",
+								"64faf08b152c61cc942ddecf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user delete",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "access_token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGZhZTJiMzQ2OTNlYTI3NDIxNmNmZmIiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE2OTQxNjUzMDcsImV4cCI6MTY5NDE3OTcwN30.COtOyfcQ5YpjndNsTBL1S3sqs-gZ-k9faQpoGOLztIQ",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/delete/64faf0cc152c61cc942dded4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"delete",
+								"64faf0cc152c61cc942dded4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user get list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "access_token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGZhZTJiMzQ2OTNlYTI3NDIxNmNmZmIiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE2OTQxNjUzMDcsImV4cCI6MTY5NDE3OTcwN30.COtOyfcQ5YpjndNsTBL1S3sqs-gZ-k9faQpoGOLztIQ",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/get-list",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"get-list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "access_token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGZlYjAxMmM0YmQ4ZTE3M2I4Mjc4MWEiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE2OTQ0OTkwMTcsImV4cCI6MTY5NDUxMzQxN30.XA_tY2d5n5Hx0Z3zvFHvk6GgOjTuVk2F36RKIEjADec",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"shah rukh\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/update/64feb012c4bd8e173b82781a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"update",
+								"64feb012c4bd8e173b82781a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "signin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"srk@gmail.com\",\r\n    \"password\":\"srk123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/signIn",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"signIn"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access_token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGZlYTM1Njg1MmQyMzNiZjY4NTMzZjAiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE2OTQ0MDk2MTIsImV4cCI6MTY5NDQyNDAxMn0.KLMj3AzP2eNAJy6kRJXh5ZPKgQuBgRivVj8oRASRiyA",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\":\"shah rukh\",\r\n    \"lastName\":\"khan\",\r\n    \"email\":\"srk@gmail.com\",\r\n    \"password\":\"srk123\",\r\n    \"mobile\":\"99887766\",\r\n    \"gender\":\"MALE\",\r\n    \"address\":{\"address1\":\"infocity\"},\r\n    \"role\":\"ADMIN\"\r\n    //\"status\":\"ACTIVE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "profile-image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "access_token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NGZlYjAxMmM0YmQ4ZTE3M2I4Mjc4MWEiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE2OTQ0MTI4NTUsImV4cCI6MTY5NDQyNzI1NX0.RJ-T3VSD7ajuN71o-YCHDdXjvPmJN42S2TwSgomLE8o",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profileImage",
+									"type": "file",
+									"src": "/C:/Users/ravi/Pictures/flower.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3005/api/v1/user/profile-image/64feb012c4bd8e173b82781a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3005",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"profile-image",
+								"64feb012c4bd8e173b82781a"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
