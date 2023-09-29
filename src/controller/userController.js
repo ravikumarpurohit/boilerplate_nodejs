@@ -1,19 +1,19 @@
-const userModel = require("../models/userModel");
+const { userModel } = require("../models/userModel");
+const employeeModel = require("../models/employeeModel");
 const { success, successAuth, error, exception } = require("../models/responsesModels/responseModel");
-const { statusCodeEnum } = require("../utils/commonFun");
+const { StatusCodes } = require("http-status-codes");
 const { checkPassword, encryptPassword } = require("../utils/passwordCheck");
 const { JWTSecret } = require("../config/index");
 const jwt = require("jsonwebtoken");
-const mailer = require("../utils/emailUtility");
+const { mailer, setPassword } = require("../utils/emailUtility");
 
 exports.signUp = async (req, res) => {
   try {
-
     const userExist = await userModel.findOne({ email: req.body.email });
     if (userExist) {
-      return error("Email already exists", statusCodeEnum.internalServerError, res);
-
+      return error("Email already exists", StatusCodes.BAD_REQUEST, res);
     }
+
     const password = await encryptPassword(req.body.password);
 
     const data = {
@@ -26,11 +26,10 @@ exports.signUp = async (req, res) => {
       gender: req.body.gender,
       address: req.body.address,
       role: req.body.role,
-      status: req.body.status
+      isActive: req.body.isActive,
     };
 
     const result = await userModel.create(data);
-
 
     if (result) {
       const emailSender = await mailer(req.body.email, result._id);
@@ -38,15 +37,14 @@ exports.signUp = async (req, res) => {
         user: result._id,
       };
 
-      return success("User Created. Please login.", data, statusCodeEnum.created, res, 5);
+      return success("User Created. Please login.", data, StatusCodes.CREATED, res, 5);
     } else {
-      return error("Unable to create the User.", statusCodeEnum.internalServerError, res);
+      return error("Unable to create the User.", StatusCodes.INTERNAL_SERVER_ERROR, res);
     }
   } catch (error) {
     console.error(error);
-    return exception("", statusCodeEnum.internalServerError, res, error);
+    return exception("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
-
 };
 
 exports.signIn = async (req, res) => {
@@ -60,24 +58,21 @@ exports.signIn = async (req, res) => {
             $regex: new RegExp(`^${email}$`, "i"),
           },
         },
-        "_id email name password status role"
-      )
-      .lean();
+        "_id email firstName password isActive role"
+      ).lean();
 
     if (!user || Object.keys(user).length == 0) {
-      return error("user does not exist.", statusCodeEnum.notFound, res, {});
+      return error("user does not exist.", StatusCodes.BAD_REQUEST, res, {});
     }
 
     const isPassword = await checkPassword(password, user.password);
     if (isPassword) {
-      if (user.status != "ACTIVE") {
-        return res.json({
-          error: "You are inactive",
-        });
+      if (user.isActive != true) {
+        return success("You are inactive", "", StatusCodes.BAD_REQUEST, res, 5);
       }
 
       const { password, ..._user } = user;
-      const _token = jwt.sign({ _id: _user._id, role: _user.role }, JWTSecret, {
+      const token = jwt.sign({ _id: _user._id, role: _user.role }, JWTSecret, {
         expiresIn: "4h",
       });
       const cookieOptions =
@@ -92,29 +87,82 @@ exports.signIn = async (req, res) => {
             secure: true,
             sameSite: "None",
           };
-      res.cookie("access_token", _token, cookieOptions);
-      let data = {
-        user: { id: user._id, name: user.firstName, email: user.email, status: user.status },
-      };
-      return successAuth("", _token, data, statusCodeEnum.success, res, 5);
+      res.cookie("token", token, cookieOptions);
+
+      const userData = await userModel.aggregate([{
+        $match: {
+          _id: user._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "employees",
+          localField: "employeeId",
+          foreignField: "_id",
+          as: "employee"
+        }
+      },
+      {
+        "$unwind": "$employee"
+      },
+      {
+        $project: {
+          "_id": 1,
+          "employeeId": 1,
+          employeeCode: "$employee.employeeCode",
+          firstName: "$employee.firstName",
+          middleName: "$employee.middleName",
+          surName: "$employee.surName",
+          email: "$employee.email",
+          mobile: "$employee.mobile",
+          gender: "$employee.gender",
+          isActive: "$employee.isActive",
+          "emailVerify": 1,
+          "role": 1
+        }
+      }
+      ]);
+      let data = ""
+      if (userData.length > 0) {
+        data = userData[0];
+      } else {
+        data = { id: user._id, name: user.firstName, email: user.email, role: user.role, isActive: user.isActive };
+      }
+      return successAuth("", token, data, StatusCodes.OK, res, 5);
     }
-    return error("incorrect password.", statusCodeEnum.unauthorized, res, {});
+    return error("incorrect password.", StatusCodes.UNAUTHORIZED, res, {});
   } catch (error) {
     console.error(error);
-    return exception("", statusCodeEnum.internalServerError, res, error);
+    return exception("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
+  }
+};
+
+exports.checkUser = async (req, res) => {
+  try {
+    const _id = req.user._id;
+    console.log(_id);
+    const query = { firstName: 1, lastName: 1, email: 1, mobile: 1, gender: 1, role: 1 };
+    const data = await userModel.findById(_id).select(query);
+    if (!data) {
+      return error("user does not exist.", StatusCodes.BAD_REQUEST, res, {});
+    }
+    return successAuth("", req.token, { user: data }, StatusCodes.OK, res, 5);
+  } catch (e) {
+    console.log(e);
+    return error("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
 exports.signOut = (req, res) => {
   try {
-    res.clearCookie("access_token");
+    res.clearCookie("token");
     let data = {
       loggedOut: 1,
     };
-    return success("Successfully logout.", data, statusCodeEnum.success, res, 5);
+    return success("Successfully logout.", data, StatusCodes.OK, res, 5);
   } catch (error) {
     console.error(error);
-    return exception("", statusCodeEnum.internalServerError, res, error);
+    return exception("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
@@ -122,12 +170,13 @@ exports.delete = async (req, res) => {
   try {
     console.log(req.body);
     const _id = req.params._id;
-    const data = { "status": "INACTIVE" };
+    const data = { isActive: false };
     await userModel.findByIdAndUpdate(_id, data, { new: true });
-    return success("Customer Deleted", "", statusCodeEnum.success, res, 5);
+    
+    return success("User Deleted", "", StatusCodes.OK, res, 5);
   } catch (e) {
-    console.log(error);
-    return error("Customer not Deleted.", statusCodeEnum.internalServerError, res, error);
+    console.log(e);
+    return error("User not Deleted.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
@@ -135,66 +184,62 @@ exports.update = async (req, res) => {
   try {
     console.log(req.body);
     const _id = req.params._id;
-    const data = await userModel.findByIdAndUpdate(_id, req.body, {
-      new: true,
-    });
-    return success("Customer Details updated.", "", statusCodeEnum.created, res, 5);
+    const data = await userModel.findByIdAndUpdate(_id, req.body, { new: true });
+    return success("Customer Details updated.", "", StatusCodes.CREATED, res, 5);
   } catch (e) {
     console.log(e);
-    return error("Customer Details not updated.", statusCodeEnum.internalServerError, res, error);
+    return error("Customer Details not updated.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
 exports.getById = async (req, res) => {
   try {
-    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 }
+    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 };
 
     const _id = req.params._id;
     console.log(_id);
     const data = await userModel.findById(_id).select(query);
-    return success("", data, statusCodeEnum.created, res, 5);
+    return success("", data, StatusCodes.CREATED, res, 5);
   } catch (e) {
     console.log(e);
-    return error("", statusCodeEnum.internalServerError, res, error);
+    return error("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
 exports.get = async (req, res) => {
   try {
-    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 }
+    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 };
     const data = await userModel.find().select(query);
-    return success("", data, statusCodeEnum.created, res, 5);
+    return success("", data, StatusCodes.CREATED, res, 5);
   } catch (e) {
     console.log(e);
-    return error("", statusCodeEnum.internalServerError, res, error);
+    return error("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
 exports.changePassword = async (req, res) => {
   try {
-
     const _id = req.params._id;
     const oldPassword = req.body.oldPassword;
     const password = req.body.password;
     const passwordVerify = req.body.passwordVerify;
 
     if (password != passwordVerify) {
-      return error("Passwords not match.", statusCodeEnum.badRequest, res, {});
-    };
+      return error("Passwords not match.", StatusCodes.BAD_REQUEST, res, {});
+    }
     const newPassword = await encryptPassword(password);
     const user = await userModel.findById(_id);
     const isPassword = await checkPassword(oldPassword, user.password);
     if (!isPassword) {
-      return error("oldPasswords not match.", statusCodeEnum.badRequest, res, {});
+      return error("oldPasswords not match.", StatusCodes.BAD_REQUEST, res, {});
     }
-
 
     await userModel.findByIdAndUpdate(_id, { password: newPassword }, { new: true });
 
-    return success("Password changed successfully", "", statusCodeEnum.success, res, 5);
+    return success("Password changed successfully", "", StatusCodes.OK, res, 5);
   } catch (e) {
     console.log(error);
-    return error("Password not changed.", statusCodeEnum.internalServerError, res, error);
+    return error("Password not changed.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
@@ -202,33 +247,98 @@ exports.emailVerify = async (req, res) => {
   try {
     console.log(req.body);
     const _id = req.params._id;
-    await userModel.findByIdAndUpdate(_id, { emailVerify: true }, {
-      new: true,
-    });
-    return success("Email Verified successfully.", "", statusCodeEnum.created, res, 5);
+    await userModel.findByIdAndUpdate(
+      _id,
+      { emailVerify: true },
+      {
+        new: true,
+      }
+    );
+    return success("Email Verified successfully.", "", StatusCodes.OK, res, 5);
   } catch (e) {
     console.log(e);
-    return error("Email not Verified.", statusCodeEnum.internalServerError, res, error);
+    return error("Email not Verified.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 };
 
-
 exports.profileImage = async (req, res) => {
   try {
-
-    if (req.file.filename == 0) {
-      return error("Kindly Upload Profile Images properly.", statusCodeEnum.internalServerError, res, error);
+    const filename = req.file.filename;
+    if (filename == 0) {
+      return error("Kindly Upload Profile Images properly.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
     }
 
-    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 }
+    const query = { firstName: 1, lastName: 1, email: 1, emailVerify: 1, mobile: 1, gender: 1, address: 1, role: 1, status: 1 };
     const id = req.params._id;
-    const data = await userModel.findByIdAndUpdate(id, { profileImage: req.file.filename }, { new: true }).select(query);
+    const data = await userModel.findByIdAndUpdate(id, { profileImage: filename }, { new: true }).select(query);
     console.log(data);
 
-    return success("Profile Image added successfully.", data, statusCodeEnum.created, res, 5);
-
+    return success("Profile Image added successfully.", data, StatusCodes.CREATED, res, 5);
   } catch (e) {
     console.log(e);
-    return error("Profile Image not added.", statusCodeEnum.internalServerError, res, error);
+    return error("Profile Image not added.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
   }
 }
+
+exports.activeUser = async (req, res) => {
+  try {
+    const empId = req.params._id;
+    const employeeId = empId;
+    const query = { email: 1, gender: 1, designation: 1, isActive: 1 };
+
+    const empData = await employeeModel.findById(empId).select(query);
+    const data = {
+      empData: empData,
+      employeeId: employeeId,
+      email: empData.email,
+      password: req.body.password
+    }
+    console.log(data);
+    const result = await userModel.create(data);
+
+    if (result) {
+      const emailSender = await setPassword(empData.email, result._id);
+      let data = {
+        user: result._id
+      };
+
+      return success("User added successfully", data, StatusCodes.CREATED, res, 5);
+    }
+  } catch (e) {
+    console.log(e);
+    return error("User not added", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
+  }
+};
+
+exports.setPassword = async (req, res) => {
+  try {
+    console.log(req.body);
+    const _id = req.params._id;
+    await userModel.findById(_id);
+    res.sendfile('index.html', { root: __dirname });
+  } catch (e) {
+    console.log(e);
+    return error("Email not Verified.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  try {
+
+    const _id = req.params._id;
+    const password = req.body.password;
+    const reEnterPassword = req.body.reEnterPassword;
+
+    if (password != reEnterPassword) {
+      return error("Passwords not match.", StatusCodes.BAD_REQUEST, res, {});
+    };
+    const newPassword = await encryptPassword(password);
+
+    await userModel.findByIdAndUpdate(_id, { password: newPassword }, { new: true });
+
+    return success("Password Updated successfully", "", StatusCodes.OK, res, 5);
+  } catch (e) {
+    console.log(error);
+    return error("Password not Update.", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
+  }
+};
