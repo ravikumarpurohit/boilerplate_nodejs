@@ -5,7 +5,7 @@ const { logger } = require("../utils/logger");
 const { StatusCodes } = require("http-status-codes");
 const { error } = require("../models/responsesModels/responseModel");
 const { JWTSecret } = require("../config/index");
-const { Role } = require("../models/userModel");
+const { Role } = require("../models/adminModel");
 
 const apiMiddleware = (req, res, next) => {
   //  if access token given
