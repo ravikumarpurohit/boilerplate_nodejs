@@ -3,7 +3,6 @@ const multer = require("multer");
 const fs = require("fs");
 
 const upload = (destination) => {
-
   try {
     // Create directories recursively if they don't exist
     fs.mkdirSync(destination, { recursive: true });
@@ -17,11 +16,12 @@ const upload = (destination) => {
         cb(null, destination);
       },
       filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+        const fileExtension = path.extname(file.originalname);
+        const uniqueFileName = file.fieldname + '-' + Date.now() + '-' + process.hrtime.bigint() + fileExtension;
+        cb(null, uniqueFileName);
       },
     }),
   });
 };
-
 
 module.exports = upload;
