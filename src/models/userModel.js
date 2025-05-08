@@ -1,12 +1,15 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const Gender = {
-  MALE: "Male", FEMALE: "Female", OTHER: "Other"
-}
+  MALE: "Male",
+  FEMALE: "Female",
+  OTHER: "Other",
+};
 
 const Role = {
-  ADMIN: "Admin", USER: "User"
-}
+  ADMIN: "Admin",
+  USER: "User",
+};
 
 const options = {
   collection: "users",
@@ -52,32 +55,29 @@ const userSchema = new mongoose.Schema(
     mobile: { type: Number },
     gender: {
       type: String,
-      enum: Gender,
+      enum: Object.values(Gender),
     },
-    address: address,
+    address,
     role: {
       type: String,
-      enum: Role,
+      enum: Object.values(Role),
       default: Role.USER,
     },
-
     isActive: {
       type: Boolean,
-      default: true
+      default: true,
     },
     profileImage: { type: String },
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "employees",
       index: true,
-      require: true
+      required: true,
     },
   },
   options
 );
 
 const userModel = mongoose.model("users", userSchema);
-module.exports = {
-  userModel,
-  Role
-};
+
+export { userModel, Role };

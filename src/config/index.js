@@ -1,10 +1,9 @@
-const dotenv = require("dotenv");
+// config.js
+import dotenv from "dotenv";
 dotenv.config();
 
-module.exports = {
-  port: process.env.PORT,
-  environment: process.env.NODE_ENV,
-  databaseURL: process.env.DATABASE_URI,
-  clientDomain: process.env.CLIENT_APPLICATION_DOMAIN,
-  JWTSecret: process.env.JWT_SECRET,
-};
+export const port = process.env.PORT;
+export const environment = process.env.NODE_ENV;
+export const databaseURL = process.env.DATABASE_URI;
+export const clientDomain = process.env.CLIENT_APPLICATION_DOMAIN;
+export const JWTSecret = process.env.JWT_SECRET;

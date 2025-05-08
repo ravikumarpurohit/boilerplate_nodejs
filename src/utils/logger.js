@@ -1,13 +1,12 @@
-const { createLogger, format, transports } = require("winston");
-const { combine, timestamp, prettyPrint, colorize, errors, align, printf, simple } = format;
-require("winston-daily-rotate-file");
+import { createLogger, format, transports } from "winston";
+import "winston-daily-rotate-file";
+
+const { combine, timestamp, prettyPrint, errors, align, printf } = format;
 const basePath = "./logs/";
 
 const filter = (level) =>
   format((info) => {
-    if (info.level === level) {
-      return info;
-    }
+    return info.level === level ? info : false;
   })();
 
 const levels = {
@@ -32,10 +31,9 @@ const dash = createLogger({
         timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         align(),
         printf((info) => {
-          if (info.stack) {
-            return `${info.timestamp} ${info.level}:${info.message} \nStack:\n\t ${info.stack}`;
-          }
-          return `${info.timestamp} ${info.level}:${info.message}`;
+          return info.stack
+            ? `${info.timestamp} ${info.level}:${info.message} \nStack:\n\t ${info.stack}`
+            : `${info.timestamp} ${info.level}:${info.message}`;
         })
       ),
       json: true,
@@ -50,10 +48,9 @@ const dash = createLogger({
         timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         align(),
         printf((info) => {
-          if (info.stack) {
-            return `${info.timestamp} ${info.level}:${info.message} \nStack:\n\t ${info.stack}`;
-          }
-          return `${info.timestamp} ${info.level}: ${info.message}`;
+          return info.stack
+            ? `${info.timestamp} ${info.level}:${info.message} \nStack:\n\t ${info.stack}`
+            : `${info.timestamp} ${info.level}: ${info.message}`;
         })
       ),
       json: true,
@@ -83,17 +80,16 @@ const dash = createLogger({
     new transports.File({
       filename: `${basePath}http.log`,
       level: "http",
-      format: format.combine(
+      format: combine(
         filter("http"),
         errors({ stack: true }),
         prettyPrint(),
         timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         align(),
         printf((info) => {
-          if (info.stack) {
-            return `${info.timestamp} ${info.level}:${info.message} \nStack:\n\t ${info.stack}`;
-          }
-          return `${info.timestamp} ${info.level}: ${info.message}`;
+          return info.stack
+            ? `${info.timestamp} ${info.level}:${info.message} \nStack:\n\t ${info.stack}`
+            : `${info.timestamp} ${info.level}: ${info.message}`;
         })
       ),
       json: false,
@@ -104,15 +100,14 @@ const dash = createLogger({
 if (process.env.NODE_ENV !== "production") {
   dash.add(
     new transports.Console({
-      format: format.combine(
+      format: combine(
         errors({ stack: true }),
         prettyPrint(),
         timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         printf((info) => {
-          if (info.stack) {
-            return `${info.timestamp} ${info.level}:${info.message} \n ${info.stack}`;
-          }
-          return `${info.timestamp} ${info.level}: ${info.message}`;
+          return info.stack
+            ? `${info.timestamp} ${info.level}:${info.message} \n ${info.stack}`
+            : `${info.timestamp} ${info.level}: ${info.message}`;
         })
       ),
       json: true,
@@ -122,21 +117,26 @@ if (process.env.NODE_ENV !== "production") {
 
 //#region Methods
 const info = (message, requestURL = null, extraPayload = null) => {
-  dash.info(`${message}, RequestURL: ${requestURL}, OtherDetails: ${extraPayload == {} ? "" : extraPayload}`);
+  dash.info(
+    `${message}, RequestURL: ${requestURL}, OtherDetails: ${
+      Object.keys(extraPayload || {}).length ? JSON.stringify(extraPayload) : ""
+    }`
+  );
 };
-const error = (error, requestURL, extraPayload = {}) => {
-  dash.error(`${error}, RequestURL: ${requestURL}, OtherDetails: `, extraPayload);
+
+const error = (err, requestURL, extraPayload = {}) => {
+  dash.error(`${err}, RequestURL: ${requestURL}, OtherDetails: `, extraPayload);
 };
-const fatal = (error, requestURL, extraPayload = {}) => {
-  dash.fatal(`${error} RequestURL: ${requestURL} `, extraPayload);
+
+const fatal = (err, requestURL, extraPayload = {}) => {
+  dash.fatal(`${err} RequestURL: ${requestURL} `, extraPayload);
 };
+
 const debug = (extraPayload) => {
   dash.debug(extraPayload);
 };
-const logger = { info, error, fatal, debug };
 
+const logger = { info, error, fatal, debug };
 //#endregion
 
-module.exports = {
-  logger,
-};
+export { logger };

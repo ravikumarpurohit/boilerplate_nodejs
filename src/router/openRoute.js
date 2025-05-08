@@ -1,3 +1,5 @@
-const openRoute = require("express").Router();
+import { Router } from "express";
 
-module.exports = openRoute;
+const openRoute = Router();
+
+export default openRoute;

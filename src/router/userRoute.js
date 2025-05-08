@@ -1,34 +1,62 @@
-const userRoute = require("express").Router();
-const userController = require("../controller/userController");
-const { userMiddleware, adminMiddleware, apiMiddleware } = require("../middleware/authMiddleware");
-const upload = require("../utils/filesUploads");
+import express from "express";
+import {
+  signUp,
+  signIn,
+  checkUser,
+  signOut,
+  deleteUser,
+  update,
+  get,
+  getById,
+  changePassword,
+  emailVerify,
+  profileImage,
+  activeUser,
+  setUserPassword,
+  updatePassword,
+} from "../controller/userController.js";
 
-userRoute.post("/", adminMiddleware, userController.signUp);
+import {
+  userMiddleware,
+  adminMiddleware,
+  apiMiddleware,
+} from "../middleware/APIMiddleware.js";
 
-userRoute.post("/login", userController.signIn);
+import upload from "../utils/filesUploads.js";
 
-userRoute.post("/checkUser", apiMiddleware, userController.checkUser);
+const userRoute = express.Router();
 
-userRoute.post("/signOut", userMiddleware, userController.signOut);
+userRoute.post("/", adminMiddleware, signUp);
 
-userRoute.delete("/delete/:_id", adminMiddleware, userController.delete);
+userRoute.post("/login", signIn);
 
-userRoute.patch("/update/:_id", userMiddleware, userController.update);
+userRoute.post("/checkUser", apiMiddleware, checkUser);
 
-userRoute.get("/list", adminMiddleware, userController.get);
+userRoute.post("/signOut", userMiddleware, signOut);
 
-userRoute.get("/:_id", userMiddleware, userController.getById);
+userRoute.delete("/delete/:_id", adminMiddleware, deleteUser);
 
-userRoute.post("/change-password/:_id", userMiddleware, userController.changePassword);
+userRoute.patch("/update/:_id", userMiddleware, update);
 
-userRoute.get("/email-verify/:_id", userController.emailVerify);
+userRoute.get("/list", adminMiddleware, get);
 
-userRoute.post("/profile-image/:_id", userMiddleware, upload.single("profileImage"), userController.profileImage);
+userRoute.get("/:_id", userMiddleware, getById);
 
-userRoute.post("/active-user/:_id", adminMiddleware, userController.activeUser);
+userRoute.post("/change-password/:_id", userMiddleware, changePassword);
 
-userRoute.get("/set-password/:_id", userController.setPassword);
+userRoute.get("/email-verify/:_id", emailVerify);
 
-userRoute.post("/set-password/:_id", userController.updatePassword);
+userRoute.post(
+  "/profile-image/:_id",
+  userMiddleware,
+  upload.single("profileImage"),
+  profileImage
+);
 
-module.exports = userRoute;
+userRoute.post("/active-user/:_id", adminMiddleware, activeUser);
+
+userRoute.get("/set-password/:_id", setUserPassword);
+
+userRoute.post("/set-password/:_id", updatePassword);
+
+export default userRoute;

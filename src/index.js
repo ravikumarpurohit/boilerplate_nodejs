@@ -1,40 +1,45 @@
-const path = require("path");
-const express = require("express");
+import path from "path";
+import express from "express";
+import logger from "morgan";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+import { port } from "./config/index.js";
+import { conn } from "./models/index.js";
+import Api from "./router/indexRoute.js";
+
+// Setup __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
-const logger = require("morgan");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-const { port } = require("./config/index");
-const { conn } = require("./models/index");
-const Api = require("./router/indexRoute");
 
 conn;
-
-const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./../swagger-output.json');
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
 
 app.use(
   logger("dev", {
-    skip: (req, res) => {
-      return req.originalUrl.includes("/static/");//../upload/profileImage
-    },
+    skip: (req, res) => req.originalUrl.includes("/static/"),
   })
 );
 
-// app.use("uploads/profileImage/", express.static(path.join(__dirname, "../uploads/profileImage")));
+// Static file routes (uncomment and adjust if needed)
+// app.use("/uploads/profileImage/", express.static(path.join(__dirname, "../uploads/profileImage")));
 // app.use("*/upload", express.static(path.join(__dirname, 'public/images')));
+
 app.use("/api/v1", Api);
 
-//  Front End url
-const public = require("path").join(__dirname, "../public");
-app.use(express.static(public));
+// Serve frontend
+const publicDir = join(__dirname, "../public");
+app.use(express.static(publicDir));
 app.get("*", (req, res) => {
-  res.sendFile("index.html", { public }); 
+  res.sendFile("index.html", { root: publicDir });
 });
 
-app.listen(port, () => console.log(`server running at ${port}...`));
+app.listen(port, () => console.log(`Server running at port ${port}...`));
