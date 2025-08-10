@@ -5,7 +5,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-
 import { port } from "./config/index.js";
 import { conn } from "./models/index.js";
 import Api from "./router/indexRoute.js";

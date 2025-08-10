@@ -1,17 +1,18 @@
 import nodemailer from "nodemailer";
+import { emailConfig } from "../config/index";
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: emailConfig.userName,
+    pass: emailConfig.password, // Use environment variable for security
+  },
+});
 
 export const mailer = async (req_email, _id) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "divyeshborkhatariya1@gmail.com",
-        pass: "idyyhozitogmxank",
-      },
-    });
-
     const mailOptions = {
-      from: "divyeshborkhatariya1@gmail.com",
+      from: emailConfig.from, // Use environment variable for security
       to: req_email,
       subject: "Verify your account",
       text: `Verify your account - http://localhost:3005/api/v1/user/email-verify/${_id}`,
@@ -31,14 +32,6 @@ export const mailer = async (req_email, _id) => {
 
 export const setPassword = async (req_email, _id) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "divyeshborkhatariya1@gmail.com",
-        pass: "idyyhozitogmxank",
-      },
-    });
-
     const mailOptions = {
       from: "divyeshborkhatariya1@gmail.com",
       to: req_email,
