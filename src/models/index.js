@@ -12,6 +12,7 @@ import { databaseURL } from "../config/index.js";
 
 const conn = mongoose
   .connect(databaseURL)
+  .then(() => console.log("Database connected successfully")) 
   .catch((err) => console.log(err?.reason));
 
 export { conn };

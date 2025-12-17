@@ -9,7 +9,7 @@ import { StatusCodes } from "http-status-codes";
 import { checkPassword, encryptPassword } from "../utils/passwordCheck.js";
 import { JWTSecret } from "../config/index.js";
 import jwt from "jsonwebtoken";
-import { mailer, setPassword } from "../utils/emailUtility.js";
+// import { mailer, setPassword } from "../utils/emailUtility.js";
 
 export const signUp = async (req, res) => {
   try {
@@ -35,11 +35,7 @@ export const signUp = async (req, res) => {
 
     const result = await userModel.create(data);
 
-    if (result) {
-      const emailSender = await mailer(req.body.email, result._id);
-      let data = {
-        user: result._id,
-      };
+  
 
       return success(
         "User Created. Please login.",
@@ -48,13 +44,7 @@ export const signUp = async (req, res) => {
         res,
         5
       );
-    } else {
-      return error(
-        "Unable to create the User.",
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        res
-      );
-    }
+    
   } catch (error) {
     console.error(error);
     return exception("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
