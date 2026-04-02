@@ -35,16 +35,13 @@ export const signUp = async (req, res) => {
 
     const result = await userModel.create(data);
 
-  
-
-      return success(
-        "User Created. Please login.",
-        data,
-        StatusCodes.CREATED,
-        res,
-        5
-      );
-    
+    return success(
+      "User Created. Please login.",
+      data,
+      StatusCodes.CREATED,
+      res,
+      5,
+    );
   } catch (error) {
     console.error(error);
     return exception("", StatusCodes.INTERNAL_SERVER_ERROR, res, error);
@@ -62,7 +59,7 @@ export const signIn = async (req, res) => {
             $regex: new RegExp(`^${email}$`, "i"),
           },
         },
-        "_id email firstName password isActive role"
+        "_id email firstName password isActive role",
       )
       .lean();
 
@@ -199,7 +196,7 @@ export const deleteUser = async (req, res) => {
       "User not Deleted.",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
@@ -216,7 +213,7 @@ export const update = async (req, res) => {
       "",
       StatusCodes.CREATED,
       res,
-      5
+      5,
     );
   } catch (e) {
     console.log(e);
@@ -224,7 +221,7 @@ export const update = async (req, res) => {
       "Customer Details not updated.",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
@@ -294,7 +291,7 @@ export const changePassword = async (req, res) => {
     await userModel.findByIdAndUpdate(
       _id,
       { password: newPassword },
-      { new: true }
+      { new: true },
     );
 
     return success("Password changed successfully", "", StatusCodes.OK, res, 5);
@@ -304,7 +301,7 @@ export const changePassword = async (req, res) => {
       "Password not changed.",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
@@ -318,7 +315,7 @@ export const emailVerify = async (req, res) => {
       { emailVerify: true },
       {
         new: true,
-      }
+      },
     );
     return success("Email Verified successfully.", "", StatusCodes.OK, res, 5);
   } catch (e) {
@@ -327,7 +324,7 @@ export const emailVerify = async (req, res) => {
       "Email not Verified.",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
@@ -340,7 +337,7 @@ export const profileImage = async (req, res) => {
         "Kindly Upload Profile Images properly.",
         StatusCodes.INTERNAL_SERVER_ERROR,
         res,
-        error
+        error,
       );
     }
 
@@ -366,7 +363,7 @@ export const profileImage = async (req, res) => {
       data,
       StatusCodes.CREATED,
       res,
-      5
+      5,
     );
   } catch (e) {
     console.log(e);
@@ -374,7 +371,7 @@ export const profileImage = async (req, res) => {
       "Profile Image not added.",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
@@ -406,7 +403,7 @@ export const activeUser = async (req, res) => {
         data,
         StatusCodes.CREATED,
         res,
-        5
+        5,
       );
     }
   } catch (e) {
@@ -415,7 +412,7 @@ export const activeUser = async (req, res) => {
       "User not added",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
@@ -432,7 +429,7 @@ export const setUserPassword = async (req, res) => {
       "Email not Verified.",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
@@ -451,7 +448,7 @@ export const updatePassword = async (req, res) => {
     await userModel.findByIdAndUpdate(
       _id,
       { password: newPassword },
-      { new: true }
+      { new: true },
     );
 
     return success("Password Updated successfully", "", StatusCodes.OK, res, 5);
@@ -461,7 +458,7 @@ export const updatePassword = async (req, res) => {
       "Password not Update.",
       StatusCodes.INTERNAL_SERVER_ERROR,
       res,
-      error
+      error,
     );
   }
 };
